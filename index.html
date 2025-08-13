@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menú BRUMAE</title>
+  <style>
+    /* Base styling inspired by the BRUMAE menu */
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #5e6f55; /* similar green tone to the menu */
+      color: #f5f5eb;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      width: 260px;
+      height: auto;
+    }
+    /* Category styles */
+    .category {
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .category-title {
+      color: #ebdfc9;
+      font-size: 1.3rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding: 12px 0;
+    }
+    .category-title .toggle-icon {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+    .category-title.collapsed .toggle-icon {
+      transform: rotate(-90deg);
+    }
+    .category-items {
+      display: none;
+      padding-bottom: 16px;
+    }
+    .category-items.open {
+      display: block;
+    }
+    /* Item card */
+    .item-card {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+    }
+    .item-name {
+      font-size: 1rem;
+      color: #f5f5eb;
+      margin: 0;
+    }
+    .item-desc {
+      font-size: 0.85rem;
+      color: #d9cab1;
+      margin: 4px 0 0;
+    }
+    .item-price {
+      font-weight: bold;
+      color: #ebdfc9;
+      margin-top: 4px;
+    }
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: #5e6f55;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .modal-header h3 {
+      margin: 0;
+      color: #ebdfc9;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: #ebdfc9;
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+    .modal-body {
+      margin-bottom: 20px;
+    }
+    .modal-body p {
+      margin: 6px 0;
+      font-size: 0.9rem;
+      color: #d9cab1;
+    }
+    .modal-body textarea {
+      width: 100%;
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      resize: vertical;
+      min-height: 60px;
+    }
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .quantity-control button {
+      background-color: #ebdfc9;
+      color: #5e6f55;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .quantity-control input {
+      width: 60px;
+      text-align: center;
+      margin: 0 8px;
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+    }
+    .add-btn {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      background-color: #b85c5c;
+      color: #f5f5eb;
+      border: none;
+      padding: 10px 0;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .add-btn:hover {
+      background-color: #a24b4b;
+    }
+    /* Floating summary button */
+    .floating-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #ebdfc9;
+      color: #5e6f55;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 50px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 900;
+    }
+    .floating-btn:hover {
+      background-color: #d9cab1;
+    }
+    /* Summary modal */
+    .summary-modal-content {
+      background-color: #5e6f55;
+      padding: 20px;
+      border-radius: 8px;
+      width: 95%;
+      max-width: 550px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .summary-modal-content h3 {
+      margin-top: 0;
+      color: #ebdfc9;
+    }
+    #summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+    #summary-table th, #summary-table td {
+      padding: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      color: #f5f5eb;
+    }
+    #summary-table th {
+      color: #ebdfc9;
+      font-weight: bold;
+    }
+    .summary-total {
+      text-align: right;
+      font-weight: bold;
+      margin-bottom: 16px;
+      color: #ebdfc9;
+    }
+    .summary-actions {
+      text-align: right;
+    }
+    .confirm-btn {
+      background-color: #ebdfc9;
+      color: #5e6f55;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .confirm-btn:hover {
+      background-color: #d9cab1;
+    }
+    .remove-btn {
+      background-color: #b85c5c;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .remove-btn:hover {
+      background-color: #a24b4b;
+    }
+    @media (max-width: 600px) {
+      .modal-content, .summary-modal-content {
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <!-- Reference the logo file located in the same directory -->
+      <img src="logo brumae.png" alt="BRUMAE logo">
+    </div>
+    <div id="menu-container"></div>
+    <!-- Item detail modal -->
+    <div id="item-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="item-modal-title"></h3>
+          <button class="close-btn" id="item-modal-close">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="item-modal-desc"></p>
+          <label for="item-comment">Instrucciones especiales</label>
+          <textarea id="item-comment" placeholder="Añada aquí los comentarios sobre este producto"></textarea>
+          <div class="quantity-control">
+            <button id="qty-minus">−</button>
+            <input type="number" id="item-qty" value="1" min="1">
+            <button id="qty-plus">+</button>
+          </div>
+        </div>
+        <button id="item-add-btn" class="add-btn">Agregar al pedido</button>
+      </div>
+    </div>
+    <!-- Summary modal -->
+    <div id="summary-modal" class="modal-overlay">
+      <div class="summary-modal-content">
+        <div class="modal-header">
+          <h3>Resumen del pedido</h3>
+          <button class="close-btn" id="summary-modal-close">×</button>
+        </div>
+        <table id="summary-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cant.</th>
+              <th>Comentario</th>
+              <th>Subtotal</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="summary-total" id="summary-total"></div>
+        <div class="summary-actions">
+          <button id="confirm-btn" class="confirm-btn">Confirmar pedido</button>
+        </div>
+      </div>
+    </div>
+    <!-- Floating button to view summary -->
+    <button id="view-summary-btn" class="floating-btn">Ver pedido</button>
+  </div>
+
+  <script>
+    // Menú de productos con descripciones y precios en pesos colombianos
+    const menuData = {
+      'Entradas': [
+        { name: 'Palitos x4', price: 15000, desc: 'Crujientes palitos de queso para compartir.' },
+        { name: 'Chicharrones crujientes', price: 25000, desc: 'Deliciosos chicharrones fritos, acompañados de limón y salsa.' },
+        { name: 'Queso asado', price: 22000, desc: 'Queso a la plancha con toque ahumado.' },
+        { name: 'Empanadas con hogao', price: 8000, desc: 'Empanadas rellenas con carne y papa, acompañadas de hogao casero.' },
+      ],
+      'Platos': [
+        { name: 'Hamburguesa mixta', price: 32000, desc: 'Hamburguesa artesanal con mezcla de res y cerdo, acompañada de papas fritas.' },
+        { name: 'Hamburguesa vegetariana', price: 30000, desc: 'Hamburguesa hecha con vegetales frescos y queso, ideal para vegetarianos.' },
+        { name: 'Hamburguesa res', price: 30000, desc: 'Clásica hamburguesa de carne de res con vegetales y salsas.' },
+        { name: 'Hamburguesa amapola', price: 32000, desc: 'Hamburguesa gourmet con pan de amapola y salsa especial.' },
+        { name: 'Hamburguesa chesse grill', price: 32000, desc: 'Hamburguesa con queso a la parrilla y aderezos caseros.' },
+        { name: 'Hamburguesa mexicana', price: 32000, desc: 'Hamburguesa con jalapeños, guacamole y salsa mexicana.' },
+        { name: 'Hamburguesa ranchera', price: 32000, desc: 'Hamburguesa con toques de BBQ y cebolla caramelizada.' },
+        { name: 'Hamburguesa hawiana', price: 30000, desc: 'Hamburguesa con piña a la parrilla y salsa dulce.' },
+        { name: 'Hamburguesa pollo', price: 35000, desc: 'Hamburguesa de pechuga de pollo jugosa con vegetales.' },
+        { name: 'Pechuga napolitana', price: 35000, desc: 'Filete de pechuga al estilo napolitano con queso y salsa.' },
+        { name: 'Suprema de pollo', price: 30000, desc: 'Pollo empanizado acompañado de ensalada y papas.' },
+        { name: 'Pierna de cerdo', price: 30000, desc: 'Pierna de cerdo al horno con finas hierbas.' },
+        { name: 'Chuzo pollo', price: 28500, desc: 'Brocheta de pollo sazonada con especias.' },
+        { name: 'Picada para X 2', price: 65000, desc: 'Picada variada para dos personas con carnes y acompañamientos.' },
+        { name: 'Salmón en salsa de maracuyá', price: 55000, desc: 'Salmón a la plancha bañado en salsa de maracuyá.' },
+        { name: 'Punta de anca', price: 45000, desc: 'Corte de carne de res jugosa con guarnición.' },
+        { name: 'Churrasco', price: 45000, desc: 'Corte de carne asado con chimichurri y papas.' },
+        { name: 'Lomo fino', price: 50000, desc: 'Lomo de res tierno acompañado de vegetales.' },
+        { name: 'Costillas', price: 39000, desc: 'Costillas de cerdo glaseadas en salsa BBQ.' },
+        { name: 'Salchipapas, nuggets, huevo codorniz', price: 23000, desc: 'Combinado de salchichas, nuggets y huevos de codorniz sobre papas.' },
+      ],
+      'Bebidas': [
+        { name: 'Jugos en agua', price: 9500, desc: 'Jugos de frutas naturales preparados en agua.' },
+        { name: 'Jugo en leche', price: 12000, desc: 'Jugos de frutas preparados en leche.' },
+        { name: 'Limonada de coco', price: 13000, desc: 'Refrescante limonada de coco.' },
+        { name: 'Limonada cerezada', price: 13000, desc: 'Limonada con toque de cereza.' },
+        { name: 'Sodas saborizadas', price: 13000, desc: 'Bebidas gaseosas con sabores frutales.' },
+        { name: 'Gaseosa', price: 6500, desc: 'Refresco gaseoso clásico.' },
+        { name: 'Té Hatsu', price: 9500, desc: 'Té frío saborizado de la marca Hatsu.' },
+      ],
+      'Licores': [
+        { name: 'Aguardiente media', price: 65000, desc: 'Aguardiente Antioqueño de media botella.' },
+        { name: 'Aguardiente litro', price: 110000, desc: 'Aguardiente Antioqueño en presentación de litro.' },
+        { name: 'Ron media', price: 70000, desc: 'Media botella de ron.' },
+        { name: 'Ron botella', price: 110000, desc: 'Botella de ron.' },
+        { name: 'Tequila media', price: 85000, desc: 'Media botella de tequila.' },
+        { name: 'Tequila botella', price: 130000, desc: 'Botella de tequila.' },
+        { name: 'Whisky media', price: 70000, desc: 'Media botella de whisky.' },
+        { name: 'Whisky botella', price: 130000, desc: 'Botella de whisky.' },
+        { name: 'Cerveza nacional', price: 9000, desc: 'Cerveza nacional fría.' },
+        { name: 'Tres cordilleras', price: 14000, desc: 'Cerveza artesanal Tres Cordilleras.' },
+        { name: 'Corona', price: 14000, desc: 'Cerveza Corona importada.' },
+      ],
+    };
+
+    // Array para almacenar el pedido
+    const order = [];
+
+    // Construye la interfaz del menú como acordeones y tarjetas
+    const menuContainer = document.getElementById('menu-container');
+    Object.keys(menuData).forEach(category => {
+      const categoryDiv = document.createElement('div');
+      categoryDiv.className = 'category';
+      const titleDiv = document.createElement('div');
+      titleDiv.className = 'category-title';
+      const titleSpan = document.createElement('span');
+      titleSpan.textContent = category;
+      const toggleIcon = document.createElement('span');
+      toggleIcon.className = 'toggle-icon';
+      toggleIcon.textContent = '►';
+      titleDiv.appendChild(titleSpan);
+      titleDiv.appendChild(toggleIcon);
+      const itemsDiv = document.createElement('div');
+      itemsDiv.className = 'category-items';
+      // Toggle display on title click
+      titleDiv.addEventListener('click', () => {
+        const isOpen = itemsDiv.classList.contains('open');
+        itemsDiv.classList.toggle('open');
+        // rotate icon when collapsed
+        if (isOpen) {
+          titleDiv.classList.remove('collapsed');
+        } else {
+          titleDiv.classList.add('collapsed');
+        }
+      });
+      menuData[category].forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        const nameEl = document.createElement('div');
+        nameEl.className = 'item-name';
+        nameEl.textContent = item.name;
+        const descEl = document.createElement('div');
+        descEl.className = 'item-desc';
+        descEl.textContent = item.desc;
+        const priceEl = document.createElement('div');
+        priceEl.className = 'item-price';
+        priceEl.textContent = `$${item.price.toLocaleString('es-CO')}`;
+        card.appendChild(nameEl);
+        card.appendChild(descEl);
+        card.appendChild(priceEl);
+        card.addEventListener('click', () => openItemModal(category, index));
+        itemsDiv.appendChild(card);
+      });
+      categoryDiv.appendChild(titleDiv);
+      categoryDiv.appendChild(itemsDiv);
+      menuContainer.appendChild(categoryDiv);
+    });
+
+    /**
+     * Añade un elemento al pedido
+     */
+    function addItemToOrder(category, index, quantity, comment) {
+      const item = menuData[category][index];
+      order.push({
+        name: item.name,
+        price: item.price,
+        quantity: quantity,
+        comment: comment
+      });
+      updateSummary();
+    }
+
+    // Variables para rastrear el producto actual en el modal
+    let currentCategory = '';
+    let currentIndex = 0;
+
+    /**
+     * Abre el modal con el detalle del producto seleccionado
+     */
+    function openItemModal(category, index) {
+      currentCategory = category;
+      currentIndex = index;
+      const item = menuData[category][index];
+      document.getElementById('item-modal-title').textContent = item.name;
+      document.getElementById('item-modal-desc').textContent = item.desc;
+      document.getElementById('item-comment').value = '';
+      document.getElementById('item-qty').value = 1;
+      document.getElementById('item-modal').style.display = 'flex';
+    }
+
+    /**
+     * Cierra el modal del producto
+     */
+    function closeItemModal() {
+      document.getElementById('item-modal').style.display = 'none';
+    }
+
+    /**
+     * Abre el modal del resumen
+     */
+    function openSummaryModal() {
+      updateSummary();
+      document.getElementById('summary-modal').style.display = 'flex';
+    }
+
+    /**
+     * Cierra el modal del resumen
+     */
+    function closeSummaryModal() {
+      document.getElementById('summary-modal').style.display = 'none';
+    }
+
+    /**
+     * Actualiza la tabla de resumen, el total y el contador en el botón flotante
+     */
+    function updateSummary() {
+      const tbody = document.querySelector('#summary-table tbody');
+      const totalDiv = document.getElementById('summary-total');
+      const viewBtn = document.getElementById('view-summary-btn');
+      tbody.innerHTML = '';
+      let total = 0;
+      order.forEach((entry, idx) => {
+        const row = document.createElement('tr');
+        const nameCell = document.createElement('td');
+        nameCell.textContent = entry.name;
+        const qtyCell = document.createElement('td');
+        qtyCell.textContent = entry.quantity;
+        const commentCell = document.createElement('td');
+        commentCell.textContent = entry.comment;
+        const subtotal = entry.price * entry.quantity;
+        total += subtotal;
+        const subtotalCell = document.createElement('td');
+        subtotalCell.textContent = `$${subtotal.toLocaleString('es-CO')}`;
+        const removeCell = document.createElement('td');
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Eliminar';
+        removeBtn.className = 'remove-btn';
+        removeBtn.addEventListener('click', () => {
+          order.splice(idx, 1);
+          updateSummary();
+        });
+        removeCell.appendChild(removeBtn);
+        row.appendChild(nameCell);
+        row.appendChild(qtyCell);
+        row.appendChild(commentCell);
+        row.appendChild(subtotalCell);
+        row.appendChild(removeCell);
+        tbody.appendChild(row);
+      });
+      totalDiv.textContent = `Total: $${total.toLocaleString('es-CO')}`;
+      // Actualiza el texto del botón flotante
+      if (order.length > 0) {
+        viewBtn.textContent = `Ver pedido (${order.length})`;
+      } else {
+        viewBtn.textContent = 'Ver pedido';
+      }
+    }
+
+    /**
+     * Genera el mensaje de WhatsApp y abre la conversación cuando se confirma el pedido
+     */
+    document.getElementById('confirm-btn').addEventListener('click', () => {
+      if (order.length === 0) {
+        alert('No has agregado ningún producto al pedido.');
+        return;
+      }
+      let message = 'Hola, quiero hacer el siguiente pedido:\n';
+      let total = 0;
+      order.forEach(entry => {
+        const subtotal = entry.price * entry.quantity;
+        total += subtotal;
+        message += `${entry.name} x${entry.quantity} - $${subtotal.toLocaleString('es-CO')}`;
+        if (entry.comment) {
+          message += ` (Comentario: ${entry.comment})`;
+        }
+        message += '\n';
+      });
+      message += `Total: $${total.toLocaleString('es-CO')}`;
+      const whatsappNumber = '573123228719';
+      const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+      // Cierra el modal de resumen después de enviar
+      closeSummaryModal();
+    });
+
+    // Configurar botones de cantidad en el modal del producto
+    document.getElementById('qty-minus').addEventListener('click', () => {
+      const qtyInput = document.getElementById('item-qty');
+      let value = parseInt(qtyInput.value) || 1;
+      if (value > 1) qtyInput.value = value - 1;
+    });
+    document.getElementById('qty-plus').addEventListener('click', () => {
+      const qtyInput = document.getElementById('item-qty');
+      let value = parseInt(qtyInput.value) || 1;
+      qtyInput.value = value + 1;
+    });
+    // Cerrar modal de producto
+    document.getElementById('item-modal-close').addEventListener('click', closeItemModal);
+    // Agregar producto desde el modal
+    document.getElementById('item-add-btn').addEventListener('click', () => {
+      const quantity = parseInt(document.getElementById('item-qty').value) || 1;
+      const comment = document.getElementById('item-comment').value.trim();
+      addItemToOrder(currentCategory, currentIndex, quantity, comment);
+      closeItemModal();
+    });
+    // Mostrar resumen al hacer clic en el botón flotante
+    document.getElementById('view-summary-btn').addEventListener('click', openSummaryModal);
+    // Cerrar resumen desde su botón
+    document.getElementById('summary-modal-close').addEventListener('click', closeSummaryModal);
+  </script>
+</body>
+</html>
