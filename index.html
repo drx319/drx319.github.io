@@ -192,8 +192,8 @@
       border-radius: 8px;
       /* Ajustar ancho de la ventana emergente para que se adapte a diferentes tamaños de pantalla */
       width: 90%;
-      max-width: 550px;
-      max-height: 80vh;
+      max-width: 600px;
+      max-height: 85vh;
       overflow-y: auto;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
@@ -259,7 +259,7 @@
     }
     #summary-table input[type="number"] {
       /* Por defecto, el campo de cantidad es más corto (hasta tres dígitos) */
-      width: 45px;
+      width: 25px;
     }
     #summary-table input[type="text"] {
       width: 140px;
@@ -273,14 +273,15 @@
         padding: 4px;
       }
       #summary-table input[type="number"] {
-        width: 45px;
+        width: 25px;
       }
       #summary-table input[type="text"] {
         width: 100px;
       }
       .summary-modal-content {
-        /* En pantallas muy pequeñas, el modal ocupa casi todo el ancho disponible */
+        /* En pantallas muy pequeñas, el modal ocupa casi todo el ancho y se adapta en altura */
         width: 95%;
+        max-height: 90vh;
       }
     }
     @media (max-width: 600px) {
@@ -587,8 +588,8 @@
         // Botón para eliminar fila
         const removeCell = document.createElement('td');
         const removeBtn = document.createElement('button');
-        // Mostrar un icono de papelera en lugar del texto "Eliminar"
-        removeBtn.textContent = '🗑️';
+        // Mostrar un icono más estilizado para eliminar (cruz)
+        removeBtn.textContent = '✖';
         removeBtn.className = 'remove-btn';
         // Atributo accesible para lectores de pantalla
         removeBtn.setAttribute('aria-label', 'Eliminar');
